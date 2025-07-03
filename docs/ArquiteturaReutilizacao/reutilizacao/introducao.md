@@ -4,3 +4,10 @@
 <h3>Referências</h3>
 
 > <ul><li><p>Sommerville, I. (2016). <em>Software Engineering</em>. 10th ed. Pearson.</p></li><li><p>Pressman, R. S., &amp; Maxim, B. R. (2019). <em>Software Engineering: A Practitioner's Approach</em>. 9th ed. McGraw-Hill Education.</p></li><li><p>Gamma, E., Helm, R., Johnson, R., &amp; Vlissides, J. (1994). <em>Design Patterns: Elements of Reusable Object-Oriented Software</em>. Addison-Wesley.</p></li><li><p>McConnell, S. (2004). <em>Code Complete: A Practical Handbook of Software Construction</em>. 2nd ed. Microsoft Press.</p></li></ul></div></div>
+
+
+## Histórico de Versões
+
+| Versão | Data       | Descrição                                      | Autor               | Revisor            |
+|--------|------------|------------------------------------------------|---------------------|--------------------|
+| 1.0    | 03/07/2025 | Criação do documento| [João Lucas](https://github.com/jlucasiqueira)   |       [Rafael Pereira](https://github.com/rafgpereira)   | 
