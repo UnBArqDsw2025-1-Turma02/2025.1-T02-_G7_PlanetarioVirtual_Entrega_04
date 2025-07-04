@@ -50,6 +50,22 @@ Reunião de abertura da Entrega 4 do projeto *Planetário Virtual*, com foco em 
 
 ---
 
+## Link da Gravação
+
+Reunião feita via Teams e postado no YouTube como não listado a seguir no Vídeo 1
+
+<div style="text-align: center">
+
+Vídeo 1: Reunião Geral - Entrega 4
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/j87x7q0S0Tc?si=4LhIr0CSXDc1c6DN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Autores: [Milena Rocha](https://github.com/MilenaFRocha) . Reunião Geral - Entrega 4. Disponível em: https://www.youtube.com/watch?v=j87x7q0S0Tc. Acesso em: 02 de julho 2025.
+
+<div>
+
+---
+
 *Reunião encerrada com o entendimento compartilhado da abordagem da Entrega 4 e definição do próximo passo de atribuição das atividades.*
 
 ---
@@ -58,5 +74,5 @@ Reunião de abertura da Entrega 4 do projeto *Planetário Virtual*, com foco em 
 
 | Versão | Data       | Descrição                                          | Autor                  | Revisor              |
 | ------ | ---------- | -------------------------------------------------- | ---------------------- | -------------------- |
-| 1.0    | 02/07/2025 | Criação da ata da reunião de abertura da Entrega 4 | Milena Fernandes Rocha | Rafael Gomes Pereira |
+| 1.0    | 02/07/2025 | Criação da ata da reunião de abertura da Entrega 4 | [Milena Rocha](https://github.com/MilenaFRocha) | [Rafael Gomes Pereira]() |
 
