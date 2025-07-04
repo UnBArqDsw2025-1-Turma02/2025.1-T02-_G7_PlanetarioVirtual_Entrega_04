@@ -8,8 +8,8 @@
     - [4.1. DAS](./ArquiteturaReutilizacao/das/4.1.DAS.md)
     - [4.2. Reutilização de Software](./ArquiteturaReutilizacao/reutilizacao/4.2.ReutilizacaoDeSoftware.md)
       - [4.2.1 Introdução](./ArquiteturaReutilizacao/reutilizacao/introducao.md)
-      - [4.2.2 Aplicação](./ArquiteturaReutilizacao/reutilizacao/reuso.md)
-      - [4.2.3 Aplicação Externa](./ArquiteturaReutilizacao/reutilizacao/aplicacaoExterna.md)
+      - [4.2.2 Aplicação Externa](./ArquiteturaReutilizacao/reutilizacao/aplicacaoExterna.md)
+      - [4.2.3 Aplicação Interna](./ArquiteturaReutilizacao/reutilizacao/aplicacaoInterna.md)
     - [4.3. Participações](./ArquiteturaReutilizacao/participacao/4.3.ParticipacoesArqReutilizacao.md)
     - 
   - **Atas**
