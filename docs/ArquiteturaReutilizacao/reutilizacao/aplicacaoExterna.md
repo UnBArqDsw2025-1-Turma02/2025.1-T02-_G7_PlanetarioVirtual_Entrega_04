@@ -72,7 +72,7 @@ export function PostItem({ post, onDelete }: PostItemProps) {
 }
 ```
 ### Explicação: 
-A reutilização é evidente pela ausência de configuração de rotas. Não há um arquivo ou bloco de código no projeto definindo que o caminho /postagens/[id] deve renderizar a PostDetailView. Simplesmente ao criar a estrutura de arquivos src/app/postagens/[id]/page.tsx, o Next.js se encarrega de toda a lógica de roteamento. O uso do componente <Link href={'/postagens/${post.id}'}> demonstra a aplicação direta dessa funcionalidade, que otimiza a navegação entre páginas sem um recarregamento completo (Client-Side Navigation).
+A reutilização é evidente pela ausência de configuração de rotas. Não há um arquivo ou bloco de código no projeto definindo que o caminho /postagens/[id] deve renderizar a PostDetailView. Simplesmente ao criar a estrutura de arquivos src/app/postagens/[id]/page.tsx, o Next.js se encarrega de toda a lógica de roteamento. O uso do componente <Link href={'/postagens/${post.id'}> demonstra a aplicação direta dessa funcionalidade, que otimiza a navegação entre páginas sem um recarregamento completo (Client-Side Navigation).
 
 ## Tailwind CSS: Reutilização de um Sistema de Design
 
