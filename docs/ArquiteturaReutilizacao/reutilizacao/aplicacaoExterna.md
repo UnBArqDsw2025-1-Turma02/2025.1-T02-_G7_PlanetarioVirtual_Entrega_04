@@ -226,7 +226,212 @@ A reutilização de caixa-preta é evidente na simplicidade das chamadas de fun�
 
 # BackEnd
 
-...
+Este documento tem como objetivo demonstrar como o projeto aplicou o princípio da reutilização de caixa-preta no backend da aplicação externa, por meio da integração de frameworks e bibliotecas consolidadas. Essa abordagem permitiu acelerar o desenvolvimento, garantir maior confiabilidade e concentrar os esforços na lógica de negócio do Planetário Virtual, evitando reinventar soluções já bem estabelecidas.
+
+> [Link para o código do Backend](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/tree/main/projeto/grupo1/backend)
+
+## FastAPI: Reutilização da Arquitetura para APIs Web Assíncronas
+
+O backend do Planetário Virtual reutiliza a arquitetura fornecida pelo framework **FastAPI**, uma solução moderna, performática e fortemente baseada em tipagem. A equipe aplicou o princípio da reutilização de **caixa-preta**, adotando recursos prontos como roteadores com `APIRouter`, tratamento de erros, integração com OpenAPI, e suporte a middlewares.
+
+Essa abordagem permitiu que o foco se mantivesse na lógica do domínio do sistema (como postagens, comentários e usuários), enquanto o framework se encarrega de aspectos estruturais da aplicação web.
+
+> [Documentação oficial do FastAPI](https://fastapi.tiangolo.com/)
+
+### Ativos Reutilizados
+
+- Roteadores com `APIRouter` para modularizar os endpoints.
+- Tipagem automática e validação com Pydantic.
+- Suporte automático à documentação OpenAPI/Swagger.
+- Tratamento de erros com `HTTPException` e códigos de status prontos.
+- Integração com decoradores personalizados, como `VerificadorPermissaoFactory`.
+
+---
+
+### Código Comprobatório
+
+> [Ver código completo](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/blob/main/projeto/grupo1/backend/app/routers/postagem_router.py)
+
+
+```python
+# backend/app/routers/postagem_router.py
+
+  from fastapi import APIRouter, HTTPException, status, Request
+  from typing import List
+  from ..services.postagem_service import post_service
+  from ..models.postagem_model import PostCreate, PostResponse
+  from app.decorators.auth_decorator import VerificadorPermissaoFactory
+
+  router = APIRouter(
+      prefix="/postagens",
+      tags=["Postagens"]
+  )
+
+  @router.get("/", response_model=List[PostResponse])
+  async def listar_postagens():
+      return post_service.get_all_posts()
+
+  @router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+  async def criar_postagem(post: PostCreate):
+      return post_service.create_post(post)
+```
+
+### Explicação
+
+- A instância `APIRouter` permite dividir as rotas da aplicação em módulos reutilizáveis — cada arquivo (`postagem_router.py`, `comentario_router.py`, etc.) atua como uma *feature isolada*, o que reduz acoplamento e melhora a manutenção.
+- O uso de tipos e validações automáticas (como `PostCreate` e `PostResponse`) é possível graças à integração com o Pydantic, uma biblioteca reutilizada como parte da arquitetura da FastAPI.
+- Os códigos de status HTTP (como `201_CREATED`) e as exceções padronizadas com `HTTPException` representam a reutilização de constantes e estruturas para respostas padronizadas.
+- O roteamento assíncrono é configurado automaticamente pela FastAPI, sem a necessidade de gerenciamento manual de threads ou sockets, o que simplifica a implementação e melhora o desempenho.
+
+## Reutilização da Lógica de Negócio com Serviços Python
+
+O backend do Planetário Virtual reutiliza a arquitetura de **serviços** para isolar a lógica de negócio do restante da aplicação. Essa estratégia se encaixa no modelo de reutilização **caixa-branca**, pois o código-fonte dos serviços é acessado, modificado e reutilizado em múltiplas rotas (camada de controle).
+
+Esses serviços manipulam diretamente os dados armazenados em `db.json`, aplicando regras como controle de IDs, vínculos entre usuários, comentários e postagens, validações e persistência.
+
+> [PEP 8 – Guia de estilo para Python](https://peps.python.org/pep-0008/)
+
+### Ativos Reutilizados
+
+- Serviços reutilizáveis por entidade (`post_service`, `comment_service`, `forum_service`)
+- Funções de carregamento e salvamento de banco local (_load_db, _save_db) reaproveitadas internamente
+- Instâncias globais reutilizadas em toda a aplicação
+- Padronização das funções de CRUD, com retorno consistente entre entidades
+
+---
+
+### Código Comprobatório
+
+> [Ver código completo](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/blob/main/projeto/grupo1/backend/app/services/postagem_service.py)
+
+
+```python
+# backend/app/services/postagem_service.py
+
+class PostService:
+    def __init__(self, db_path: Path = DB_PATH):
+        self.db_path = db_path
+
+    def _load_db(self) -> dict:
+        if not self.db_path.exists():
+            return {"usuarios": [], "postagens": []}
+        with open(self.db_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _save_db(self, db: dict):
+        with open(self.db_path, "w", encoding="utf-8") as f:
+            json.dump(db, f, indent=2, ensure_ascii=False)
+
+    def create_post(self, post_data: PostCreate) -> PostData:
+        db = self._load_db()
+        postagens = db.get("postagens", [])
+
+        existing_ids = [int(p["id"]) for p in postagens if str(p["id"]).isdigit()]
+        next_id = max(existing_ids) + 1 if existing_ids else 1
+
+        nome_autor = next((u["nome"] for u in db.get("usuarios", []) if u["id"] == post_data.autor_id), "Autor Desconhecido")
+
+        new_post = {
+            "id": next_id,
+            "conteudo": post_data.conteudo,
+            "autor_id": post_data.autor_id,
+            "data_criacao": datetime.now().isoformat(),
+            "numero_comentarios": len(self.get_comments_by_post_id(next_id)),
+            "nome_autor": nome_autor
+        }
+
+        db["postagens"].append(new_post)
+        self._save_db(db)
+
+        return PostData(**new_post)
+```
+### Explicação
+
+- O padrão Service Layer isola a lógica de manipulação de dados em arquivos dedicados, facilitando a reutilização das funções `create_post`, `get_all_posts`, `delete_post`, etc.
+- Funções como `_load_db()` e `_save_db()` são reutilizadas por todas as operações de leitura e escrita no arquivo `db.json`.
+- A função `create_post()` encapsula várias regras de negócio:
+  - Geração de ID sequencial
+  - Inclusão da data de criação
+  - Associação com o nome do autor
+  - Inicialização do contador de comentários
+- Esse padrão é repetido de forma semelhante nos serviços de usuários (`forum_service.py`) e comentários (`comentario_service.py`), promovendo consistência e reutilização de estrutura entre os módulos.
+
+## Pydantic: Reutilização de Modelos de Dados e Validação
+
+O projeto reutiliza a biblioteca **Pydantic** para definir os modelos de entrada e saída das requisições. Esses modelos são usados tanto nas rotas quanto nas camadas de serviço, garantindo validação automática, documentação via Swagger e segurança contra dados inválidos.
+
+Essa abordagem representa uma forma de reutilização de **caixa-preta**, pois usamos a estrutura do Pydantic para validar e serializar dados, sem precisar implementar manualmente verificações, casting de tipos ou validação de campos obrigatórios.
+
+> [Documentação do Pydantic](https://docs.pydantic.dev/)
+
+### Ativos Reutilizados
+
+- **Modelos reutilizáveis com Pydantic** (`PostCreate`, `PostResponse`, `CommentCreate`, `UserCreate`, etc.)
+- **Validação automática nas rotas FastAPI**
+- **Tipagem forte nos serviços**
+- **Geração automática de schemas JSON e documentação Swagger**
+
+---
+
+### Código Comprobatório
+
+> [Ver código completo](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/blob/main/projeto/grupo1/backend/app/models/postagem_model.py)
+
+```python
+# backend/app/models/postagem_model.py
+
+from pydantic import BaseModel
+from typing import Optional
+
+class PostCreate(BaseModel):
+    conteudo: str
+    autor_id: int
+
+class PostResponse(PostCreate):
+    id: int
+    data_criacao: str
+    numero_comentarios: int
+    nome_autor: Optional[str] = "Autor Desconhecido"
+
+
+# backend/app/routers/postagem_router.py
+
+@router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+async def criar_postagem(post: PostCreate):
+    return post_service.create_post(post)
+
+```
+
+### Explicação
+
+- Os modelos `PostCreate` e `PostResponse` definem de forma declarativa os campos esperados nas requisições e respostas, eliminando a necessidade de validação manual.
+- A FastAPI utiliza os modelos do Pydantic para gerar automaticamente a documentação Swagger (OpenAPI), além de retornar mensagens de erro detalhadas quando os dados estão inválidos.
+- A herança entre modelos (`PostResponse` estende `PostCreate`) demonstra reutilização direta de estrutura, evitando repetição de código.
+- Esses mesmos modelos são utilizados internamente nos serviços (`PostData(**post_dict)`), mantendo padronização em toda a aplicação — desde a entrada do dado até sua persistência.
+
+## Reflexões Críticas
+
+A estratégia adotada no backend do Planetário Virtual combina reutilização de **caixa-preta**, com o uso de frameworks e bibliotecas consolidadas como FastAPI e Pydantic, e **caixa-branca**, com a criação de serviços reutilizáveis dentro do projeto.
+
+Entre os **principais benefícios observados** estão:
+
+- Redução significativa do tempo de desenvolvimento;
+- Centralização das regras de negócio, facilitando a manutenção;
+- Validação de dados robusta e automática;
+- Organização modular por entidades, seguindo boas práticas de design.
+
+Por outro lado, essa abordagem exige atenção à **manutenção dos contratos de dados** (modelos Pydantic), além de exigir familiaridade com conceitos como async/await, tipagem forte e estruturação de projetos em camadas.
+
+Apesar disso, os ganhos em clareza, reaproveitamento e robustez do backend compensaram totalmente a curva inicial de aprendizado.
+
+---
+
+## Rastreabilidade & Elos com Outros Artefatos
+
+- [Repositório completo do backend](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/tree/main/projeto/grupo1/backend)
+- [Definição dos roteadores (comentário, postagem, usuário)](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/tree/main/projeto/grupo1/backend/app/routers)
+- [Serviços reutilizáveis](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/tree/main/projeto/grupo1/backend/app/services)
+- [Modelos e schemas Pydantic](https://github.com/UnBArqDsw2025-1-Turma02/2025.1-T02-_G7_PlanetarioVirtual_Entrega_03/tree/main/projeto/grupo1/backend/app/models)
 
 ## Histórico de Versões
 
@@ -234,3 +439,4 @@ A reutilização de caixa-preta é evidente na simplicidade das chamadas de fun�
 |--------|------------|------------------------------------------------|---------------------|--------------------|
 | 1.0    | 03/07/2025 | Criação do documento e documentação do Next.js e Tailwind | [Joao Pedro](https://github.com/joaopedrooss)   |       [Rafael Pereira](https://github.com/rafgpereira)   | 
 | 1.1    | 03/07/2025 | Arrumando links e documentando Toastfy | [Joao Pedro](https://github.com/joaopedrooss)   |       [Rafael Pereira](https://github.com/rafgpereira)   | 
+| 1.2    | 04/07/2025 | Documentação completa do backend com FastAPI, serviços e Pydantic | [Letícia T. S. Martins](https://github.com/leticiatmartins)                        | [Rafael Pereira](https://github.com/rafgpereira)|
